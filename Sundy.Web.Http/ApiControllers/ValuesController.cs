@@ -45,7 +45,6 @@ namespace Sundy.Web.Http.ApiControllers
         public void Delete(string id)
         {
             throw new ApplicationException("Applica", new ArrayTypeMismatchException("Arraty"));
-            string str = id;
         }
 
         public Element Post(string id, [FromBody]XElement value)

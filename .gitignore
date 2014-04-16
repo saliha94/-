@@ -1,0 +1,7 @@
+/packages
+/*.suo
+/Sundy.Net.Http/obj
+/Sundy.Net.Http/bin
+/Sundy.Net.Http/*.user
+/Sundy.Web.Http/obj
+/Sundy.Web.Http/bin

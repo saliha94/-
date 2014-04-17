@@ -9,12 +9,14 @@ namespace Sundy.Web.Http
 {
     public class FilesService
     {
+        public const string Upload_Directory_Key = "UploadDirectory";
+
         protected static int Id = 0;
         protected static List<UploadFileModel> Mock = new List<UploadFileModel>();
 
         public string GetSaveAsFileName()
         {
-            string baseDirectory = ConfigurationManager.AppSettings["UploadBaseDirectory"];
+            string baseDirectory = ConfigurationManager.AppSettings[Upload_Directory_Key];
             if (!Directory.Exists(baseDirectory))
             {
                 Directory.CreateDirectory(baseDirectory);

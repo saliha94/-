@@ -42,17 +42,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="WebClient.file.async.cs" />
-    <Compile Include="WebClient.file.cs" />
-    <Compile Include="HttpClient.async.cs" />
+    <Compile Include="HttpClient.file.async.cs" />
+    <Compile Include="HttpClient.file.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="HttpClient.cs" />
-    <Compile Include="WebApiClient.async.cs" />
-    <Compile Include="WebApiClient.cs">
+    <Compile Include="HttpClient.Api.async.cs" />
+    <Compile Include="HttpClient.Api.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="WebClient.async.cs" />
-    <Compile Include="WebClient.cs" />
+    <Compile Include="HttpClient.async.cs" />
+    <Compile Include="HttpClient.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -4,12 +4,12 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace XData.Net.Http
 {
     public partial class HttpClient
     {
-
         private int _timeout = 90000; // 90 secs
         public int Timeout
         {
@@ -162,7 +162,22 @@ namespace XData.Net.Http
             {
                 response = request.GetResponse();
                 responseStream = response.GetResponseStream();
-                StreamReader reader = new StreamReader(responseStream);
+
+                StreamReader reader;
+
+                // text/xml;charset=utf-8
+                string charset = response.ContentType.Split(';').FirstOrDefault(s => s.Contains("charset="));
+                if (charset == null)
+                {
+                    reader = new StreamReader(responseStream);
+                }
+                else
+                {
+                    charset = charset.Trim();
+                    string encoding = charset.Substring("charset=".Length);
+                    reader = new StreamReader(responseStream, Encoding.GetEncoding(encoding));
+                }
+
                 string text = reader.ReadToEnd();
                 reader.Close();
                 return text;

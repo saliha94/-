@@ -6,11 +6,11 @@ using System.Resources;
 // General Information about an assembly is controlled through the following 
 // setPart of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("XData.Net.Http")]
+[assembly: AssemblyTitle("HttpClient")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("XData")]
-[assembly: AssemblyProduct("XData.Net.Http")]
+[assembly: AssemblyProduct("HttpClient")]
 [assembly: AssemblyCopyright("Copyright © XData 2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

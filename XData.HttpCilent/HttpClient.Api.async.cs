@@ -9,29 +9,29 @@ namespace XData.Net.Http
 {
     public partial class HttpClient
     {
-        public async Task<XElement> ApiGetAsync(string requestUriString)
+        public async Task<XElement> ApiGetAsync(string relativeUri)
         {
-            HttpWebRequest request = ApiCreateRequest(requestUriString, "GET", null);
+            HttpWebRequest request = ApiCreateRequest(relativeUri, "GET", null);
             return await ApiGetResponseElementAsync(request);
         }
 
-        public async Task<XElement> ApiPostAsync(string requestUriString, XElement value)
+        public async Task<XElement> ApiPostAsync(string relativeUri, XElement value)
         {
-            HttpWebRequest request = ApiCreateRequest(requestUriString, "POST", ApiGetBytes(value));
+            HttpWebRequest request = ApiCreateRequest(relativeUri, "POST", ApiGetBytes(value));
             return await ApiGetResponseElementAsync(request);
         }
 
-        public async Task<XElement> ApiPutAsync(string requestUriString, XElement value)
+        public async Task<XElement> ApiPutAsync(string relativeUri, XElement value)
         {
-            HttpWebRequest request = ApiCreateRequest(requestUriString, "PUT", ApiGetBytes(value));
+            HttpWebRequest request = ApiCreateRequest(relativeUri, "PUT", ApiGetBytes(value));
             return await ApiGetResponseElementAsync(request);
         }
 
-        public async Task<XElement> ApiDeleteAsync(string requestUriString, XElement value)
+        public async Task<XElement> ApiDeleteAsync(string relativeUri, XElement value)
         {
             HttpWebRequest request = (value == null)
-                ? ApiCreateRequest(requestUriString, "DELETE", null)
-                : ApiCreateRequest(requestUriString, "DELETE", ApiGetBytes(value));
+                ? ApiCreateRequest(relativeUri, "DELETE", null)
+                : ApiCreateRequest(relativeUri, "DELETE", ApiGetBytes(value));
 
             return await ApiGetResponseElementAsync(request);
         }
@@ -66,17 +66,17 @@ namespace XData.Net.Http
         }
 
         //
-        public async Task<XElement> ApiLoginAsync(string requestUriString, string userName, string password)
+        public async Task<XElement> ApiLoginAsync(string relativeUri, string userName, string password)
         {
             XElement element = new XElement("Login");
             element.Add(new XElement("UserName", userName));
             element.Add(new XElement("Password", password));
-            return await ApiPostAsync(requestUriString, element);
+            return await ApiPostAsync(relativeUri, element);
         }
 
-        public async Task<XElement> ApiLogOffAsync(string requestUriString)
+        public async Task<XElement> ApiLogOffAsync(string relativeUri)
         {
-            return await ApiDeleteAsync(requestUriString, null);
+            return await ApiDeleteAsync(relativeUri, null);
         }
 
 

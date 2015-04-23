@@ -8,9 +8,9 @@ namespace XData.Net.Http
 {
     public partial class HttpClient
     {
-        public string[] Upload(string requestUriString, string[] fileNames)
+        public string[] Upload(string relativeUri, string[] fileNames)
         {
-            HttpWebRequest request = CreateUploadRequest(requestUriString, fileNames);
+            HttpWebRequest request = CreateUploadRequest(relativeUri, fileNames);
             string result = GetResponseString(request);
             string lowerResult = result.ToLower().Trim(new char[] { '\r', '\n' }).Trim(new char[] { '\r', '\n' });
             if (lowerResult.StartsWith("<!DOCTYPE html>".ToLower())) throw new WebException("Upload failed.");
@@ -18,8 +18,10 @@ namespace XData.Net.Http
             return result.Split(',');
         }
 
-        protected HttpWebRequest CreateUploadRequest(string requestUriString, string[] fileNames)
+        protected HttpWebRequest CreateUploadRequest(string relativeUri, string[] fileNames)
         {
+            string requestUriString = Origin + relativeUri;
+
             string boundary = new string('-', 32) + DateTime.Now.Ticks.ToString("x");
 
             HttpWebRequest request = CreateRequest(requestUriString);
@@ -126,9 +128,9 @@ namespace XData.Net.Http
             }
         }
 
-        public void SaveAs(string requestUriString, string identity, out string fileDownloadName, out string contentType, string saveAsFileName)
+        public void SaveAs(string relativeUri, string identity, out string fileDownloadName, out string contentType, string saveAsFileName)
         {
-            HttpWebRequest request = CreateDownloadRequest(requestUriString, identity);
+            HttpWebRequest request = CreateDownloadRequest(relativeUri, identity);
             WebResponse response = null;
             try
             {
@@ -150,11 +152,11 @@ namespace XData.Net.Http
             }
         }
 
-        public string Download(string requestUriString, string identity, out string contentType)
+        public string Download(string relativeUri, string identity, out string contentType)
         {
             string fileDownloadName;
             string saveAsFileName;
-            HttpWebRequest request = CreateDownloadRequest(requestUriString, identity);
+            HttpWebRequest request = CreateDownloadRequest(relativeUri, identity);
             WebResponse response = null;
             try
             {
@@ -216,9 +218,9 @@ namespace XData.Net.Http
             }
         }
 
-        public byte[] GetBytes(string requestUriString, string identity, out string fileDownloadName, out string contentType)
+        public byte[] GetBytes(string relativeUri, string identity, out string fileDownloadName, out string contentType)
         {
-            HttpWebRequest request = CreateDownloadRequest(requestUriString, identity);
+            HttpWebRequest request = CreateDownloadRequest(relativeUri, identity);
 
             WebResponse response = null;
             Stream responseStream = null;
@@ -279,8 +281,10 @@ namespace XData.Net.Http
             return null;
         }
 
-        protected HttpWebRequest CreateDownloadRequest(string requestUriString, string identity)
+        protected HttpWebRequest CreateDownloadRequest(string relativeUri, string identity)
         {
+            string requestUriString = Origin + relativeUri;
+
             HttpWebRequest request = CreateRequest(requestUriString + "/" + identity);
             request.AllowAutoRedirect = false;
             request.KeepAlive = true;

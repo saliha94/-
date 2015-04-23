@@ -55,26 +55,6 @@ namespace XData.Net.Http
             return request;
         }
 
-        protected string GetBaseUriString(string uriString)
-        {
-            string baseUriString;
-            int index = uriString.IndexOf('/');
-            if (index == -1 || index == uriString.Length - 1)
-            {
-                baseUriString = uriString;
-            }
-            else
-            {
-                if (uriString[index + 1] == '/')
-                {
-                    index = uriString.IndexOf('/', index + 2);
-                }
-                baseUriString = uriString.Substring(0, index);
-            }
-            return baseUriString;
-        }
-
-
         // 
         protected readonly string VerificationTokenName = "__RequestVerificationToken";
 
@@ -113,12 +93,12 @@ namespace XData.Net.Http
             return result;
         }
 
-        protected HttpWebRequest CreateLoginRequest(string requestUriString, string userName, string password)
+        protected HttpWebRequest CreateLoginRequest(string requestUriString, string userName, string password, bool createPersistentCookie)
         {
             string tokenValue = GetVerificationTokenValue(requestUriString);
 
             string contentString = VerificationTokenName + "=" + tokenValue + "&";
-            contentString += string.Format("UserName={0}&Password={1}&RememberMe=false", userName, password);
+            contentString += string.Format("UserName={0}&Password={1}&RememberMe={2}", userName, password, createPersistentCookie.ToString().ToLower());
             byte[] content = Encoding.UTF8.GetBytes(contentString);
             string contentType = "application/x-www-form-urlencoded";
 
@@ -126,9 +106,11 @@ namespace XData.Net.Http
             return request;
         }
 
-        public string Login(string requestUriString, string userName, string password)
+        public string Login(string relativeUri, string userName, string password, bool createPersistentCookie)
         {
-            HttpWebRequest request = CreateLoginRequest(requestUriString, userName, password);
+            string requestUriString = Origin + relativeUri;
+
+            HttpWebRequest request = CreateLoginRequest(requestUriString, userName, password, createPersistentCookie);
             return GetResponseString(request);
         }
 
@@ -143,8 +125,29 @@ namespace XData.Net.Http
             return request;
         }
 
-        public string LogOff(string requestUriString)
+        protected string GetBaseUriString(string uriString)
         {
+            string baseUriString;
+            int index = uriString.IndexOf('/');
+            if (index == -1 || index == uriString.Length - 1)
+            {
+                baseUriString = uriString;
+            }
+            else
+            {
+                if (uriString[index + 1] == '/')
+                {
+                    index = uriString.IndexOf('/', index + 2);
+                }
+                baseUriString = uriString.Substring(0, index);
+            }
+            return baseUriString;
+        }
+
+        public string LogOff(string relativeUri)
+        {
+            string requestUriString = Origin + relativeUri;
+
             HttpWebRequest request = CreateLogOffRequest(requestUriString);
             return GetResponseString(request);
         }
@@ -195,8 +198,10 @@ namespace XData.Net.Http
         }
 
         //
-        public string Get(string requestUriString)
+        public string Get(string relativeUri)
         {
+            string requestUriString = Origin + relativeUri;
+
             HttpWebRequest request = CreateRequest(requestUriString, "GET", null, null);
             return GetResponseString(request);
         }
@@ -216,10 +221,19 @@ namespace XData.Net.Http
             return request;
         }
 
-        public string Post(string requestUriString, NameValueCollection collection)
+        public string Post(string relativeUri, NameValueCollection collection)
         {
+            string requestUriString = Origin + relativeUri;
+
             HttpWebRequest request = CreatePostRequest(requestUriString, collection);
             return GetResponseString(request);
+        }
+
+        protected string Origin { get; private set; }
+
+        public HttpClient(string origin)
+        {
+            Origin = origin;
         }
 
 

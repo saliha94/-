@@ -8,35 +8,37 @@ namespace XData.Net.Http
 {
     public partial class HttpClient
     {
-        public XElement ApiGet(string requestUriString)
+        public XElement ApiGet(string relativeUri)
         {
-            HttpWebRequest request = ApiCreateRequest(requestUriString, "GET", null);
+            HttpWebRequest request = ApiCreateRequest(relativeUri, "GET", null);
             return ApiGetResponseElement(request);
         }
 
-        public XElement ApiPost(string requestUriString, XElement value)
+        public XElement ApiPost(string relativeUri, XElement value)
         {
-            HttpWebRequest request = ApiCreateRequest(requestUriString, "POST", ApiGetBytes(value));
+            HttpWebRequest request = ApiCreateRequest(relativeUri, "POST", ApiGetBytes(value));
             return ApiGetResponseElement(request);
         }
 
-        public XElement ApiPut(string requestUriString, XElement value)
+        public XElement ApiPut(string relativeUri, XElement value)
         {
-            HttpWebRequest request = ApiCreateRequest(requestUriString, "PUT", ApiGetBytes(value));
+            HttpWebRequest request = ApiCreateRequest(relativeUri, "PUT", ApiGetBytes(value));
             return ApiGetResponseElement(request);
         }
 
-        public XElement ApiDelete(string requestUriString, XElement value)
+        public XElement ApiDelete(string relativeUri, XElement value)
         {
             HttpWebRequest request = (value == null)
-                ? ApiCreateRequest(requestUriString, "DELETE", null)
-                : ApiCreateRequest(requestUriString, "DELETE", ApiGetBytes(value));
+                ? ApiCreateRequest(relativeUri, "DELETE", null)
+                : ApiCreateRequest(relativeUri, "DELETE", ApiGetBytes(value));
 
             return ApiGetResponseElement(request);
         }
 
-        protected HttpWebRequest ApiCreateRequest(string requestUriString, string method, byte[] content)
+        protected HttpWebRequest ApiCreateRequest(string relativeUri, string method, byte[] content)
         {
+            string requestUriString = Origin + relativeUri;
+
             return CreateRequest(requestUriString, method, "text/xml,application/xml", content, "application/xml");
         }
 
@@ -79,17 +81,18 @@ namespace XData.Net.Http
         }
 
         //
-        public XElement ApiLogin(string requestUriString, string userName, string password)
+        public XElement ApiLogin(string relativeUri, string userName, string password, bool createPersistentCookie)
         {
             XElement element = new XElement("Login");
             element.Add(new XElement("UserName", userName));
             element.Add(new XElement("Password", password));
-            return ApiPost(requestUriString, element);
+            element.Add(new XElement("CreatePersistentCookie", createPersistentCookie.ToString()));
+            return ApiPost(relativeUri, element);
         }
 
-        public XElement ApiLogOff(string requestUriString)
+        public XElement ApiLogOff(string relativeUri)
         {
-            return ApiDelete(requestUriString, null);
+            return ApiDelete(relativeUri, null);
         }
 
 

@@ -41,27 +41,35 @@ namespace XData.Net.Http
             }
         }
 
-        public async Task<string> LoginAsync(string requestUriString, string userName, string password)
+        public async Task<string> LoginAsync(string relativeUri, string userName, string password)
         {
+            string requestUriString = Origin + relativeUri;
+
             HttpWebRequest request = CreateLoginRequest(requestUriString, userName, password);
             return await GetResponseStringAsync(request);
         }
 
-        public async Task<string> LogOffAsync(string requestUriString)
+        public async Task<string> LogOffAsync(string relativeUri)
         {
+            string requestUriString = Origin + relativeUri;
+
             HttpWebRequest request = CreateLogOffRequest(requestUriString);
             return await GetResponseStringAsync(request);
         }
 
         //
-        public async Task<string> GetAsync(string requestUriString)
+        public async Task<string> GetAsync(string relativeUri)
         {
+            string requestUriString = Origin + relativeUri;
+
             HttpWebRequest request = CreateRequest(requestUriString, "GET", "text/plain,application/plain", null, null);
             return await GetResponseStringAsync(request);
         }
 
-        public async Task<string> PostAsync(string requestUriString, NameValueCollection collection)
+        public async Task<string> PostAsync(string relativeUri, NameValueCollection collection)
         {
+            string requestUriString = Origin + relativeUri;
+
             HttpWebRequest request = CreatePostRequest(requestUriString, collection);
             return await GetResponseStringAsync(request);
         }

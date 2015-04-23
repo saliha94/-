@@ -16,3 +16,9 @@
 /XData.Net.Http/obj
 /XData.Web.Http/obj
 /XData.Web.Http/bin
+/XData.HttpCilent/bin
+/XData.HttpCilent/obj
+/Web.Http/obj
+/Web.Http/bin
+bin
+obj

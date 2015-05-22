@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -53,28 +54,24 @@ namespace XData.Net.Http
         protected async Task<XElement> ApiGetResponseElementAsync(HttpWebRequest request)
         {
             WebResponse response = null;
-            Stream responseStream = null;
             try
             {
                 response = await CreateTask(request);
-                responseStream = response.GetResponseStream();
-                XmlReader reader = XmlReader.Create(responseStream);
-                XElement element = XElement.Load(reader);
-                if (element.Name.LocalName == "Error")
-                {
-                    throw new WebException("The remote server returned error: (500) internal server error.",
-                        new Exception(element.Element("ExceptionMessage").Value, new Exception(element.ToString())));
-                }
+                XElement element = GetElement(response);
                 return element;
             }
-            catch (Exception e)
+            catch (WebException ex)
             {
-                string msg = e.Message;
-                throw e;
+                response = ex.Response;
+                XElement element = GetElement(response);
+
+                Debug.Assert(element.Name.LocalName == "Error");
+
+                throw new WebException(ex.Message,
+                    new Exception(element.Element("ExceptionMessage").Value, new Exception(element.ToString())));
             }
             finally
             {
-                if (responseStream != null) responseStream.Close();
                 if (response != null) response.Close();
             }
         }
@@ -82,40 +79,36 @@ namespace XData.Net.Http
         protected async Task ApiResponseEmptyAsync(WebRequest request)
         {
             WebResponse response = null;
-            Stream responseStream = null;
             try
             {
                 response = await CreateTask(request);
-                responseStream = response.GetResponseStream();
-                StreamReader reader = new StreamReader(responseStream);
-                string text = reader.ReadToEnd();
-                reader.Close();
+                string text = GetString(response);
                 if (text == string.Empty) return;
                 XElement element = XElement.Parse(text);
-                if (element.Name.LocalName == "Error")
-                {
-                    throw new WebException("The remote server returned error: (500) internal server error.",
-                        new Exception(element.Element("ExceptionMessage").Value, new Exception(element.ToString())));
-                }
             }
-            catch (Exception ex)
+            catch (WebException ex)
             {
-                string msg = ex.Message;
-                throw ex;
+                response = ex.Response;
+                XElement element = GetElement(response);
+
+                Debug.Assert(element.Name.LocalName == "Error");
+
+                throw new WebException(ex.Message,
+                    new Exception(element.Element("ExceptionMessage").Value, new Exception(element.ToString())));
             }
             finally
             {
-                if (responseStream != null) responseStream.Close();
                 if (response != null) response.Close();
             }
         }
 
         //
-        public async Task<XElement> ApiLoginAsync(string requestUriString, string userName, string password)
+        public async Task<XElement> ApiLoginAsync(string requestUriString, string userName, string password, bool rememberMe)
         {
             XElement element = new XElement("Login");
             element.Add(new XElement("UserName", userName));
             element.Add(new XElement("Password", password));
+            element.Add(new XElement("RememberMe", rememberMe.ToString()));
             return await ApiPostAsync(requestUriString, "0", element);
         }
 

@@ -139,10 +139,11 @@ namespace XData.Net.Http
                 fileDownloadName = GetFileDownloadName(contentDisposition);
                 SaveAs(response, saveAsFileName);
             }
-            catch (Exception ex)
+            catch (WebException ex)
             {
-                string msg = ex.Message;
-                throw ex;
+                response = ex.Response;
+                string text = GetString(response);
+                throw new WebException(ex.Message, new Exception(text));
             }
             finally
             {
@@ -175,10 +176,11 @@ namespace XData.Net.Http
                 SaveAs(response, saveAsFileName);
                 return saveAsFileName;
             }
-            catch (Exception ex)
+            catch (WebException ex)
             {
-                string msg = ex.Message;
-                throw ex;
+                response = ex.Response;
+                string text = GetString(response);
+                throw new WebException(ex.Message, new Exception(text));
             }
             finally
             {
@@ -204,10 +206,11 @@ namespace XData.Net.Http
                     length = responseStream.Read(buffer, 0, buffer.Length);
                 }
             }
-            catch (Exception ex)
+            catch (WebException ex)
             {
-                string msg = ex.Message;
-                throw ex;
+                response = ex.Response;
+                string text = GetString(response);
+                throw new WebException(ex.Message, new Exception(text));
             }
             finally
             {
@@ -235,10 +238,11 @@ namespace XData.Net.Http
                 fileDownloadName = GetFileDownloadName(contentDisposition);
                 return data;
             }
-            catch (Exception ex)
+            catch (WebException ex)
             {
-                string msg = ex.Message;
-                throw ex;
+                response = ex.Response;
+                string text = GetString(response);
+                throw new WebException(ex.Message, new Exception(text));
             }
             finally
             {

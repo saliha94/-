@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Xml;
@@ -54,39 +55,35 @@ namespace XData.Net.Http
         protected XElement ApiGetResponseElement(WebRequest request)
         {
             WebResponse response = null;
-            Stream responseStream = null;
             try
             {
                 response = request.GetResponse();
-                responseStream = response.GetResponseStream();
-                XmlReader reader = XmlReader.Create(responseStream);
-                XElement element = XElement.Load(reader);
-                if (element.Name.LocalName == "Error")
-                {
-                    throw new WebException("The remote server returned error: (500) internal server error.",
-                        new Exception(element.Element("ExceptionMessage").Value, new Exception(element.ToString())));
-                }
+                XElement element = GetElement(response);
                 return element;
             }
-            catch (Exception ex)
+            catch (WebException ex)
             {
-                string msg = ex.Message;
-                throw ex;
+                response = ex.Response;
+                XElement element = GetElement(response);
+
+                Debug.Assert(element.Name.LocalName == "Error");
+
+                throw new WebException(ex.Message,
+                    new Exception(element.Element("ExceptionMessage").Value, new Exception(element.ToString())));
             }
             finally
             {
-                if (responseStream != null) responseStream.Close();
                 if (response != null) response.Close();
             }
         }
 
         //
-        public XElement ApiLogin(string relativeUri, string userName, string password, bool createPersistentCookie)
+        public XElement ApiLogin(string relativeUri, string userName, string password, bool rememberMe)
         {
             XElement element = new XElement("Login");
             element.Add(new XElement("UserName", userName));
             element.Add(new XElement("Password", password));
-            element.Add(new XElement("CreatePersistentCookie", createPersistentCookie.ToString()));
+            element.Add(new XElement("RememberMe", rememberMe.ToString()));
             return ApiPost(relativeUri, element);
         }
 

@@ -19,31 +19,27 @@ namespace XData.Net.Http
         protected async Task<string> GetResponseStringAsync(WebRequest request)
         {
             WebResponse response = null;
-            Stream responseStream = null;
             try
             {
                 response = await CreateTask(request);
-                responseStream = response.GetResponseStream();
-                StreamReader reader = new StreamReader(responseStream);
-                string text = reader.ReadToEnd();
-                reader.Close();
+                string text = GetString(response);
                 return text;
             }
-            catch (Exception ex)
+            catch (WebException ex)
             {
-                string msg = ex.Message;
-                throw ex;
+                response = ex.Response;
+                string text = GetString(response);
+                throw new WebException(ex.Message, new Exception(text));
             }
             finally
             {
-                if (responseStream != null) responseStream.Close();
                 if (response != null) response.Close();
             }
         }
 
-        public async Task<string> LoginAsync(string requestUriString, string userName, string password)
+        public async Task<string> LoginAsync(string requestUriString, string userName, string password, bool rememberMe)
         {
-            HttpWebRequest request = CreateLoginRequest(requestUriString, userName, password);
+            HttpWebRequest request = CreateLoginRequest(requestUriString, userName, password, rememberMe);
             return await GetResponseStringAsync(request);
         }
 

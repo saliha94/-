@@ -31,10 +31,11 @@ namespace XData.Net.Http
                 SaveAs(response, saveAsFileName);
                 return new DownloadInfo(fileDownloadName, contentType);
             }
-            catch (Exception ex)
+            catch (WebException ex)
             {
-                string msg = ex.Message;
-                throw ex;
+                response = ex.Response;
+                string text = GetString(response);
+                throw new WebException(ex.Message, new Exception(text));
             }
             finally
             {
@@ -67,10 +68,11 @@ namespace XData.Net.Http
                 SaveAs(response, saveAsFileName);
                 return new DownloadInfo(saveAsFileName, contentType);
             }
-            catch (Exception ex)
+            catch (WebException ex)
             {
-                string msg = ex.Message;
-                throw ex;
+                response = ex.Response;
+                string text = GetString(response);
+                throw new WebException(ex.Message, new Exception(text));
             }
             finally
             {
@@ -97,10 +99,11 @@ namespace XData.Net.Http
                 string fileDownloadName = GetFileDownloadName(contentDisposition);
                 return new DownloadInfo(fileDownloadName, contentType, bytes);
             }
-            catch (Exception ex)
+            catch (WebException ex)
             {
-                string msg = ex.Message;
-                throw ex;
+                response = ex.Response;
+                string text = GetString(response);
+                throw new WebException(ex.Message, new Exception(text));
             }
             finally
             {

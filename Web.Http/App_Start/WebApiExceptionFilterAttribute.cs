@@ -9,15 +9,15 @@ namespace XData.Web.Http
     {
         public override void OnException(HttpActionExecutedContext actionExecutedContext)
         {
-            XElement element = new XElement("Error");
-            element.Add(new XElement("Message", "An error occurred."));
-            element.Add(new XElement("ExceptionMessage", actionExecutedContext.Exception.Message));
-            element.Add(new XElement("ExceptionType", actionExecutedContext.Exception.GetType().FullName));
-            element.Add(new XElement("StackTrace", actionExecutedContext.Exception.StackTrace));
+            //XElement element = new XElement("Error");
+            //element.Add(new XElement("Message", "An error occurred."));
+            //element.Add(new XElement("ExceptionMessage", actionExecutedContext.Exception.Message));
+            //element.Add(new XElement("ExceptionType", actionExecutedContext.Exception.GetType().FullName));
+            //element.Add(new XElement("StackTrace", actionExecutedContext.Exception.StackTrace));
 
-            Translate(actionExecutedContext.Exception, element);
+            //Translate(actionExecutedContext.Exception, element);
 
-            actionExecutedContext.Response = new HttpResponseMessage() { Content = new StringContent(element.ToString()) };
+            //actionExecutedContext.Response = new HttpResponseMessage() { Content = new StringContent(element.ToString()) };
 
             base.OnException(actionExecutedContext);
         }

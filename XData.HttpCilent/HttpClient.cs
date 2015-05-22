@@ -93,12 +93,12 @@ namespace XData.Net.Http
             return result;
         }
 
-        protected HttpWebRequest CreateLoginRequest(string requestUriString, string userName, string password, bool createPersistentCookie)
+        protected HttpWebRequest CreateLoginRequest(string requestUriString, string userName, string password, bool rememberMe)
         {
             string tokenValue = GetVerificationTokenValue(requestUriString);
 
             string contentString = VerificationTokenName + "=" + tokenValue + "&";
-            contentString += string.Format("UserName={0}&Password={1}&RememberMe={2}", userName, password, createPersistentCookie.ToString().ToLower());
+            contentString += string.Format("UserName={0}&Password={1}&RememberMe={2}", userName, password, rememberMe.ToString().ToLower());
             byte[] content = Encoding.UTF8.GetBytes(contentString);
             string contentType = "application/x-www-form-urlencoded";
 
@@ -160,40 +160,57 @@ namespace XData.Net.Http
         protected string GetResponseString(WebRequest request)
         {
             WebResponse response = null;
-            Stream responseStream = null;
             try
             {
                 response = request.GetResponse();
-                responseStream = response.GetResponseStream();
-
-                StreamReader reader;
-
-                // text/xml;charset=utf-8
-                string charset = response.ContentType.Split(';').FirstOrDefault(s => s.Contains("charset="));
-                if (charset == null)
-                {
-                    reader = new StreamReader(responseStream);
-                }
-                else
-                {
-                    charset = charset.Trim();
-                    string encoding = charset.Substring("charset=".Length);
-                    reader = new StreamReader(responseStream, Encoding.GetEncoding(encoding));
-                }
-
-                string text = reader.ReadToEnd();
-                reader.Close();
+                string text = GetString(response);
                 return text;
             }
-            catch (Exception ex)
+            catch (WebException ex)
             {
-                string msg = ex.Message;
-                throw ex;
+                response = ex.Response;
+                string text = GetString(response);
+                throw new WebException(ex.Message, new Exception(text));
+            }
+            finally
+            {
+                if (response != null) response.Close();
+            }
+        }
+
+        protected string GetString(WebResponse response)
+        {
+            Stream responseStream = null;
+            try
+            {
+                responseStream = response.GetResponseStream();
+
+                StreamReader reader = null;
+                try
+                {
+                    // text/xml;charset=utf-8
+                    string charset = response.ContentType.Split(';').FirstOrDefault(s => s.Contains("charset="));
+                    if (charset == null)
+                    {
+                        reader = new StreamReader(responseStream);
+                    }
+                    else
+                    {
+                        charset = charset.Trim();
+                        string encoding = charset.Substring("charset=".Length);
+                        reader = new StreamReader(responseStream, Encoding.GetEncoding(encoding));
+                    }
+                    string text = reader.ReadToEnd();
+                    return text;
+                }
+                finally
+                {
+                    if (reader != null) reader.Close();
+                }
             }
             finally
             {
                 if (responseStream != null) responseStream.Close();
-                if (response != null) response.Close();
             }
         }
 

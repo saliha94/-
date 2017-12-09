@@ -37,43 +37,37 @@ namespace XData.Net.Http
             }
         }
 
-        public async Task<string> LoginAsync(string requestUriString, string userName, string password, bool rememberMe)
+        public async Task<string> LoginAsync(string relativeUri, string userName, string password, bool rememberMe)
         {
+            string requestUriString = Origin + relativeUri;
+
             HttpWebRequest request = CreateLoginRequest(requestUriString, userName, password, rememberMe);
             return await GetResponseStringAsync(request);
         }
 
-        public async Task<string> LogOffAsync(string requestUriString)
+        public async Task<string> LogOffAsync(string relativeUri)
         {
+            string requestUriString = Origin + relativeUri;
+
             HttpWebRequest request = CreateLogOffRequest(requestUriString);
             return await GetResponseStringAsync(request);
         }
 
         //
-        public async Task<string> GetAsync(string requestUriString)
+        public async Task<string> GetAsync(string relativeUri)
         {
+            string requestUriString = Origin + relativeUri;
+
             HttpWebRequest request = CreateRequest(requestUriString, "GET", "text/plain,application/plain", null, null);
             return await GetResponseStringAsync(request);
         }
 
-        // overload
-        public async Task<string> GetAsync(string requestUriString, string id)
+        public async Task<string> PostAsync(string relativeUri, NameValueCollection collection)
         {
-            string requestUri = requestUriString + "/" + id;
-            return await GetAsync(requestUri);
-        }
+            string requestUriString = Origin + relativeUri;
 
-        public async Task<string> PostAsync(string requestUriString, NameValueCollection collection)
-        {
             HttpWebRequest request = CreatePostRequest(requestUriString, collection);
             return await GetResponseStringAsync(request);
-        }
-
-        // overload
-        public async Task<string> PostAsync(string requestUriString, string id, NameValueCollection collection)
-        {
-            string requestUri = requestUriString + "/" + id;
-            return await PostAsync(requestUri, collection);
         }
 
 

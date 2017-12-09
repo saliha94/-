@@ -7,9 +7,9 @@ namespace XData.Net.Http
 {
     public partial class HttpClient
     {
-        public async Task<string[]> UploadAsync(string requestUriString, string[] fileNames)
+        public async Task<string[]> UploadAsync(string relativeUri, string[] fileNames)
         {
-            HttpWebRequest request = CreateUploadRequest(requestUriString, fileNames);
+            HttpWebRequest request = CreateUploadRequest(relativeUri, fileNames);
             string result = await GetResponseStringAsync(request);
             string lowerResult = result.ToLower().Trim(new char[] { '\r', '\n' }).Trim(new char[] { '\r', '\n' });
             if (lowerResult.StartsWith("<!DOCTYPE html>".ToLower())) throw new WebException("Upload failed.");
@@ -17,9 +17,9 @@ namespace XData.Net.Http
             return result.Split(',');
         }
 
-        public async Task<DownloadInfo> SaveAsAsync(string requestUriString, string identity, string saveAsFileName)
+        public async Task<DownloadInfo> SaveAsAsync(string relativeUri, string identity, string saveAsFileName)
         {
-            HttpWebRequest request = CreateDownloadRequest(requestUriString, identity);
+            HttpWebRequest request = CreateDownloadRequest(relativeUri, identity);
             WebResponse response = null;
             try
             {
@@ -43,11 +43,11 @@ namespace XData.Net.Http
             }
         }
 
-        public async Task<DownloadInfo> DownloadAsync(string requestUriString, string identity)
+        public async Task<DownloadInfo> DownloadAsync(string relativeUri, string identity)
         {
             string fileDownloadName;
             string saveAsFileName;
-            HttpWebRequest request = CreateDownloadRequest(requestUriString, identity);
+            HttpWebRequest request = CreateDownloadRequest(relativeUri, identity);
             WebResponse response = null;
             try
             {
@@ -80,9 +80,9 @@ namespace XData.Net.Http
             }
         }
 
-        public async Task<DownloadInfo> GetBytesAsync(string requestUriString, string identity)
+        public async Task<DownloadInfo> GetBytesAsync(string relativeUri, string identity)
         {
-            HttpWebRequest request = CreateDownloadRequest(requestUriString, identity);
+            HttpWebRequest request = CreateDownloadRequest(relativeUri, identity);
 
             WebResponse response = null;
             Stream responseStream = null;

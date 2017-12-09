@@ -55,26 +55,6 @@ namespace XData.Net.Http
             return request;
         }
 
-        protected string GetBaseUriString(string uriString)
-        {
-            string baseUriString;
-            int index = uriString.IndexOf('/');
-            if (index == -1 || index == uriString.Length - 1)
-            {
-                baseUriString = uriString;
-            }
-            else
-            {
-                if (uriString[index + 1] == '/')
-                {
-                    index = uriString.IndexOf('/', index + 2);
-                }
-                baseUriString = uriString.Substring(0, index);
-            }
-            return baseUriString;
-        }
-
-
         // 
         protected readonly string VerificationTokenName = "__RequestVerificationToken";
 
@@ -126,9 +106,11 @@ namespace XData.Net.Http
             return request;
         }
 
-        public string Login(string requestUriString, string userName, string password, bool rememberMe)
+        public string Login(string relativeUri, string userName, string password, bool createPersistentCookie)
         {
-            HttpWebRequest request = CreateLoginRequest(requestUriString, userName, password, rememberMe);
+            string requestUriString = Origin + relativeUri;
+
+            HttpWebRequest request = CreateLoginRequest(requestUriString, userName, password, createPersistentCookie);
             return GetResponseString(request);
         }
 
@@ -143,8 +125,29 @@ namespace XData.Net.Http
             return request;
         }
 
-        public string LogOff(string requestUriString)
+        protected string GetBaseUriString(string uriString)
         {
+            string baseUriString;
+            int index = uriString.IndexOf('/');
+            if (index == -1 || index == uriString.Length - 1)
+            {
+                baseUriString = uriString;
+            }
+            else
+            {
+                if (uriString[index + 1] == '/')
+                {
+                    index = uriString.IndexOf('/', index + 2);
+                }
+                baseUriString = uriString.Substring(0, index);
+            }
+            return baseUriString;
+        }
+
+        public string LogOff(string relativeUri)
+        {
+            string requestUriString = Origin + relativeUri;
+
             HttpWebRequest request = CreateLogOffRequest(requestUriString);
             return GetResponseString(request);
         }
@@ -212,17 +215,12 @@ namespace XData.Net.Http
         }
 
         //
-        public string Get(string requestUriString)
+        public string Get(string relativeUri)
         {
+            string requestUriString = Origin + relativeUri;
+
             HttpWebRequest request = CreateRequest(requestUriString, "GET", null, null);
             return GetResponseString(request);
-        }
-
-        // overload
-        public string Get(string requestUriString, string id)
-        {
-            string requestUri = requestUriString + "/" + id;
-            return Get(requestUri);
         }
 
         protected HttpWebRequest CreatePostRequest(string requestUriString, NameValueCollection collection)
@@ -240,17 +238,19 @@ namespace XData.Net.Http
             return request;
         }
 
-        public string Post(string requestUriString, NameValueCollection collection)
+        public string Post(string relativeUri, NameValueCollection collection)
         {
+            string requestUriString = Origin + relativeUri;
+
             HttpWebRequest request = CreatePostRequest(requestUriString, collection);
             return GetResponseString(request);
         }
 
-        // overload
-        public string Post(string requestUriString, string id, NameValueCollection collection)
+        protected string Origin { get; private set; }
+
+        public HttpClient(string origin)
         {
-            string requestUri = requestUriString + "/" + id;
-            return Post(requestUri, collection);
+            Origin = origin;
         }
 
 

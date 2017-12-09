@@ -10,44 +10,30 @@ namespace XData.Net.Http
 {
     public partial class HttpClient
     {
-        public async Task<XElement> ApiGetAsync(string requestUriString)
+        public async Task<XElement> ApiGetAsync(string relativeUri)
         {
-            HttpWebRequest request = ApiCreateRequest(requestUriString, "GET", null);
+            HttpWebRequest request = ApiCreateRequest(relativeUri, "GET", null);
             return await ApiGetResponseElementAsync(request);
         }
 
-        // overload
-        public async Task<XElement> ApiGetAsync(string requestUriString, string id)
+        public async Task<XElement> ApiPostAsync(string relativeUri, XElement value)
         {
-            string requestUri = requestUriString + "/" + id;
-            return await ApiGetAsync(requestUri);
+            HttpWebRequest request = ApiCreateRequest(relativeUri, "POST", ApiGetBytes(value));
+            return await ApiGetResponseElementAsync(request);
         }
 
-        public async Task ApiPostAsync(string requestUriString, XElement value)
+        public async Task<XElement> ApiPutAsync(string relativeUri, XElement value)
         {
-            HttpWebRequest request = ApiCreateRequest(requestUriString, "POST", ApiGetBytes(value));
-            await ApiResponseEmptyAsync(request);
+            HttpWebRequest request = ApiCreateRequest(relativeUri, "PUT", ApiGetBytes(value));
+            return await ApiGetResponseElementAsync(request);
         }
 
-        public async Task ApiPutAsync(string requestUriString, string id, XElement value)
+        public async Task<XElement> ApiDeleteAsync(string relativeUri, XElement value)
         {
-            string requestUri = requestUriString + "/" + id;
-            HttpWebRequest request = ApiCreateRequest(requestUri, "PUT", ApiGetBytes(value));
-            await ApiResponseEmptyAsync(request);
-        }
+            HttpWebRequest request = (value == null)
+                ? ApiCreateRequest(relativeUri, "DELETE", null)
+                : ApiCreateRequest(relativeUri, "DELETE", ApiGetBytes(value));
 
-        public async Task ApiDeleteAsync(string requestUriString, string id)
-        {
-            string requestUri = requestUriString + "/" + id;
-            HttpWebRequest request = ApiCreateRequest(requestUri, "DELETE", null);
-            await ApiResponseEmptyAsync(request);
-        }
-
-        //
-        public async Task<XElement> ApiPostAsync(string requestUriString, string id, XElement value)
-        {
-            string requestUri = requestUriString + "/" + id;
-            HttpWebRequest request = ApiCreateRequest(requestUri, "POST", ApiGetBytes(value));
             return await ApiGetResponseElementAsync(request);
         }
 
@@ -76,45 +62,43 @@ namespace XData.Net.Http
             }
         }
 
-        protected async Task ApiResponseEmptyAsync(WebRequest request)
+        protected XElement GetElement(WebResponse response)
         {
-            WebResponse response = null;
+            Stream responseStream = null;
             try
             {
-                response = await CreateTask(request);
-                string text = GetString(response);
-                if (text == string.Empty) return;
-                XElement element = XElement.Parse(text);
-            }
-            catch (WebException ex)
-            {
-                response = ex.Response;
-                XElement element = GetElement(response);
-
-                Debug.Assert(element.Name.LocalName == "Error");
-
-                throw new WebException(ex.Message,
-                    new Exception(element.Element("ExceptionMessage").Value, new Exception(element.ToString())));
+                responseStream = response.GetResponseStream();
+                XmlReader reader = null;
+                try
+                {
+                    reader = XmlReader.Create(responseStream);
+                    XElement element = XElement.Load(reader);
+                    return element;
+                }
+                finally
+                {
+                    if (reader != null) reader.Close();
+                }
             }
             finally
             {
-                if (response != null) response.Close();
+                if (responseStream != null) responseStream.Close();
             }
         }
 
         //
-        public async Task<XElement> ApiLoginAsync(string requestUriString, string userName, string password, bool rememberMe)
+        public async Task<XElement> ApiLoginAsync(string relativeUri, string userName, string password, bool rememberMe)
         {
             XElement element = new XElement("Login");
             element.Add(new XElement("UserName", userName));
             element.Add(new XElement("Password", password));
             element.Add(new XElement("RememberMe", rememberMe.ToString()));
-            return await ApiPostAsync(requestUriString, "0", element);
+            return await ApiPostAsync(relativeUri, element);
         }
 
-        public async Task ApiLogOffAsync(string requestUriString)
+        public async Task<XElement> ApiLogOffAsync(string relativeUri)
         {
-            await ApiDeleteAsync(requestUriString, "0");
+            return await ApiDeleteAsync(relativeUri, null);
         }
 
 

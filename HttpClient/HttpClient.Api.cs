@@ -9,49 +9,37 @@ namespace XData.Net.Http
 {
     public partial class HttpClient
     {
-        public XElement ApiGet(string requestUriString)
+        public XElement ApiGet(string relativeUri)
         {
-            HttpWebRequest request = ApiCreateRequest(requestUriString, "GET", null);
+            HttpWebRequest request = ApiCreateRequest(relativeUri, "GET", null);
             return ApiGetResponseElement(request);
         }
 
-        // overload
-        public XElement ApiGet(string requestUriString, string id)
+        public XElement ApiPost(string relativeUri, XElement value)
         {
-            string requestUri = requestUriString + "/" + id;
-            return ApiGet(requestUri);
-        }
-
-        public void ApiPost(string requestUriString, XElement value)
-        {
-            HttpWebRequest request = ApiCreateRequest(requestUriString, "POST", ApiGetBytes(value));
-            ApiResponseEmpty(request);
-        }
-
-        public void ApiPut(string requestUriString, string id, XElement value)
-        {
-            string requestUri = requestUriString + "/" + id;
-            HttpWebRequest request = ApiCreateRequest(requestUri, "PUT", ApiGetBytes(value));
-            ApiResponseEmpty(request);
-        }
-
-        public void ApiDelete(string requestUriString, string id)
-        {
-            string requestUri = requestUriString + "/" + id;
-            HttpWebRequest request = ApiCreateRequest(requestUri, "DELETE", null);
-            ApiResponseEmpty(request);
-        }
-
-        //
-        public XElement ApiPost(string requestUriString, string id, XElement value)
-        {
-            string requestUri = requestUriString + "/" + id;
-            HttpWebRequest request = ApiCreateRequest(requestUri, "POST", ApiGetBytes(value));
+            HttpWebRequest request = ApiCreateRequest(relativeUri, "POST", ApiGetBytes(value));
             return ApiGetResponseElement(request);
         }
 
-        protected HttpWebRequest ApiCreateRequest(string requestUriString, string method, byte[] content)
+        public XElement ApiPut(string relativeUri, XElement value)
         {
+            HttpWebRequest request = ApiCreateRequest(relativeUri, "PUT", ApiGetBytes(value));
+            return ApiGetResponseElement(request);
+        }
+
+        public XElement ApiDelete(string relativeUri, XElement value)
+        {
+            HttpWebRequest request = (value == null)
+                ? ApiCreateRequest(relativeUri, "DELETE", null)
+                : ApiCreateRequest(relativeUri, "DELETE", ApiGetBytes(value));
+
+            return ApiGetResponseElement(request);
+        }
+
+        protected HttpWebRequest ApiCreateRequest(string relativeUri, string method, byte[] content)
+        {
+            string requestUriString = Origin + relativeUri;
+
             return CreateRequest(requestUriString, method, "text/xml,application/xml", content, "application/xml");
         }
 
@@ -71,6 +59,10 @@ namespace XData.Net.Http
             {
                 response = request.GetResponse();
                 XElement element = GetElement(response);
+                if (element.Name.LocalName == "Error")
+                {
+                    throw new Exception(element.Element("ExceptionMessage").Value, new Exception(element.ToString()));
+                }
                 return element;
             }
             catch (WebException ex)
@@ -82,6 +74,17 @@ namespace XData.Net.Http
 
                 throw new WebException(ex.Message,
                     new Exception(element.Element("ExceptionMessage").Value, new Exception(element.ToString())));
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null)
+                {
+                    if (ex.InnerException.Message.StartsWith("<Error>"))
+                    {
+                        throw new WebException(new WebException().Message, ex);
+                    }
+                }
+                throw;
             }
             finally
             {
@@ -113,45 +116,19 @@ namespace XData.Net.Http
             }
         }
 
-        protected void ApiResponseEmpty(WebRequest request)
-        {
-            WebResponse response = null;
-            try
-            {
-                response = request.GetResponse();
-                string text = GetString(response);
-                if (text == string.Empty) return;
-                XElement element = XElement.Parse(text);
-            }
-            catch (WebException ex)
-            {
-                response = ex.Response;
-                XElement element = GetElement(response);
-
-                Debug.Assert(element.Name.LocalName == "Error");
-
-                throw new WebException(ex.Message,
-                    new Exception(element.Element("ExceptionMessage").Value, new Exception(element.ToString())));
-            }
-            finally
-            {
-                if (response != null) response.Close();
-            }
-        }
-
         //
-        public XElement ApiLogin(string requestUriString, string userName, string password, bool rememberMe)
+        public XElement ApiLogin(string relativeUri, string userName, string password, bool createPersistentCookie)
         {
             XElement element = new XElement("Login");
             element.Add(new XElement("UserName", userName));
             element.Add(new XElement("Password", password));
-            element.Add(new XElement("RememberMe", rememberMe.ToString()));
-            return ApiPost(requestUriString, "0", element);
+            element.Add(new XElement("CreatePersistentCookie", createPersistentCookie.ToString()));
+            return ApiPost(relativeUri, element);
         }
 
-        public void ApiLogOff(string requestUriString)
+        public XElement ApiLogOff(string relativeUri)
         {
-            ApiDelete(requestUriString, "0");
+            return ApiDelete(relativeUri, null);
         }
 
 
